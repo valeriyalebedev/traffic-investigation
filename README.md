@@ -1,59 +1,73 @@
-# TrafficInvestigation
+# Traffic Investigation
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.6.
+A lightweight Angular application for security engineers to investigate Apache access logs, understand unusual traffic patterns, and assess whether a source's behavior suggests automation.
 
-## Development server
+Built as part of the DataDome Senior Frontend Engineer take-home assignment.
 
-To start a local development server, run:
+## Approach
 
-```bash
-ng serve
-```
+I treated this assignment as a time-boxed engineering exercise with an approximately four-hour budget. I divided the work into small, focused stages and update this README after each stage to document implementation progress, technical decisions, validation results, and remaining work.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+My priority is to build one coherent investigation workflow rather than a generic dashboard with many incomplete features. The main goal is to let an engineer select a source IP, inspect its request history, and understand why its behavior may be suspicious.
 
-## Code scaffolding
+## Tech Stack
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- Angular 22.2 (standalone components, signals)
+- TypeScript 6.0 (strict mode)
+- Vitest 5.0
+- SCSS
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Getting Started
 
 ```bash
-ng generate --help
+npm install
+npm start
+npm test
+npm run build
 ```
 
-## Building
+The development server runs at `http://localhost:4200`.
 
-To build the project run:
+## Technical Decisions
 
-```bash
-ng build
-```
+### Client-side parsing
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+I chose client-side parsing because the supplied dataset contains around 10,000 lines. This keeps the application self-contained and avoids introducing unnecessary backend infrastructure. Performance with larger files has not been benchmarked.
 
-## Running unit tests
+### Parser design
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+The parser supports the Apache Combined Log Format used in the supplied dataset. I implemented it as pure functions, independent of Angular, so parsing can be tested separately from the UI.
 
-```bash
-ng test
-```
+Key decisions:
 
-## Running end-to-end tests
+- **Strict validation:** malformed records are rejected rather than partially parsed.
+- **Timestamp validation:** includes calendar dates and timezone offsets.
+- **Request target preservation:** both the full request target and the extracted path are stored.
+- **Traceability:** invalid lines retain their original line numbers and content.
 
-For end-to-end (e2e) testing, run:
+This is not intended to be a universal parser for every possible Apache log configuration.
 
-```bash
-ng e2e
-```
+I deliberately avoided adding NgRx, Web Workers, or streaming parsing at this stage. They would introduce additional complexity without a demonstrated need for the supplied dataset.
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Validation
 
-## Additional Resources
+I tested the parser with 41 unit tests and validated it against the supplied dataset: 10,000 lines, 9,999 valid records, and one malformed record (an unclosed User-Agent field).
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+One important limitation: timestamps in the dataset are concentrated around minute :05 of each hour between May 17 and May 20, 2015. These are sparse observations, not continuous traffic data, so I cannot reliably infer real traffic spikes.
+
+The tests cover parser behavior but do not establish large-file performance or validate the complete upload and investigation workflow.
+
+## Implementation Steps
+
+- [x] Set up the Angular project and development environment.
+- [x] Implement the Apache Combined Log Format parser with validation.
+- [x] Add parser unit tests and validate against the supplied dataset.
+- [ ] Add file upload and connect it to the parser.
+- [ ] Aggregate traffic by source IP, including request counts, status codes, methods, and time ranges.
+- [ ] Build a chronological investigation view for a selected source.
+- [ ] Implement explainable detection rules for vulnerability path probing, repeated failed resources, and repeated request patterns.
+- [ ] Bring the investigation workflow together in one accessible, responsive screen.
+
+## AI Usage
+
+I used Claude Code to assist with implementation and test creation, and ChatGPT to discuss architecture and review technical decisions. I made the scope and technical decisions, reviewed the generated code, and validated the test and dataset results.
