@@ -48,6 +48,13 @@ function unescapeQuoted(value: string): string {
   return value.replace(/\\(.)/g, '$1');
 }
 
+/**
+ * Parses a single Apache Combined Log Format entry.
+ *
+ * Returns either a valid LogRecord or a validation error.
+ * The parser is intentionally strict about the expected log format
+ * to avoid silently accepting malformed records.
+ */
 export function parseLine(line: string, lineNumber: number): LogRecord | InvalidLogRecord {
   const match = line.match(LOG_LINE_REGEX);
   if (!match) {
