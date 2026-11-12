@@ -57,6 +57,12 @@ I verified the file upload flow in the browser, including file selection, parsin
 
 One important limitation: timestamps in the dataset are concentrated around minute :05 of each hour between May 17 and May 20, 2015. These are sparse observations, not continuous traffic data, so I cannot reliably infer real traffic spikes.
 
+### Traffic over time
+
+The "Traffic over time" chart provides a global traffic overview across all source IPs in the loaded dataset. It uses adaptive time bucketing: the interval is automatically selected from a set of candidates (1 minute to 1 day) to produce approximately 50–100 data points, keeping the chart readable regardless of dataset size.
+
+All timestamps are displayed in UTC. The complete dataset period fits within the chart width without horizontal scrolling. Bucketing is applied only for visualization; original log records are preserved unchanged and remain available for source-level investigation.
+
 ## Implementation Steps
 
 - [x] Set up the Angular project and development environment.
