@@ -5,19 +5,30 @@
 }
 
 :root {
-  --color-bg: #f8f9fa;
+  --color-bg: #f8f8fc;
   --color-surface: #ffffff;
   --color-border: #e2e5e9;
   --color-text: #1a1d21;
   --color-text-secondary: #5f6368;
   --color-text-on-accent: #ffffff;
-  --color-accent: #1a73e8;
-  --color-accent-hover: #1557b0;
-  --color-focus-ring: #4d90fe;
+  --color-accent: #7c3aed;
+  --color-accent-hover: #6d28d9;
+  --color-accent-light: #ede9fe;
+  --color-accent-subtle: #f5f3ff;
+  --color-focus-ring: #a78bfa;
   --color-error-bg: #fef2f2;
   --color-error-text: #991b1b;
   --color-error-border: #fecaca;
   --color-warning: #b45309;
+  --color-success: #16a34a;
+  --color-success-bg: #f0fdf4;
+  --color-sidebar-bg: #fbfaff;
+  --color-sidebar-active: #ede9fe;
+  --color-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --color-header-border: #ede9fe;
+
+  --sidebar-width: 180px;
+  --header-height: 64px;
 }
 
 html,

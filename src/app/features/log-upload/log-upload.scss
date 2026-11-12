@@ -118,3 +118,17 @@
 .has-invalid {
   color: var(--color-warning);
 }
+
+.upload-button--compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4375rem 0.875rem;
+  font-size: 0.8125rem;
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+
+  &:hover {
+    background: var(--color-accent-hover);
+  }
+}

@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { DatasetService } from '../../core/services/dataset.service';
 
 @Component({
@@ -11,6 +11,9 @@ import { DatasetService } from '../../core/services/dataset.service';
 })
 export class LogUpload {
   private readonly dataset = inject(DatasetService);
+
+  /** When true, renders only the upload button without heading, description, or summary. */
+  readonly compact = input(false);
 
   protected readonly fileName = this.dataset.fileName;
   protected readonly result = this.dataset.result;

@@ -1,0 +1,54 @@
+<section class="dataset-status" aria-label="Dataset status">
+  @if (hasData()) {
+    <div class="status-loaded">
+      <div class="file-info">
+        <svg class="file-icon" viewBox="0 0 20 20" width="20" height="20" fill="none" aria-hidden="true">
+          <path d="M4 3a1 1 0 011-1h6l5 5v10a1 1 0 01-1 1H5a1 1 0 01-1-1V3z" stroke="var(--color-accent)" stroke-width="1.5" fill="var(--color-accent-light)"/>
+          <path d="M11 2v4a1 1 0 001 1h4" stroke="var(--color-accent)" stroke-width="1.5"/>
+        </svg>
+        <div class="file-details">
+          <span class="file-name-row">
+            <span class="file-name">{{ fileName() }}</span>
+            <span class="badge badge-loaded">Loaded</span>
+          </span>
+          <span class="file-meta">Apache Combined Log Format · {{ result()!.stats.totalLines | number }} lines</span>
+        </div>
+      </div>
+
+      <div class="parse-info">
+        <div class="parse-top">
+          <svg class="check-icon" viewBox="0 0 18 18" width="18" height="18" fill="none" aria-hidden="true">
+            <circle cx="9" cy="9" r="7" fill="var(--color-success)" opacity="0.15"/>
+            <path d="M6 9l2 2 4-4" stroke="var(--color-success)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="parse-label">Parsing complete</span>
+          <span class="parse-stats">
+            {{ result()!.stats.validCount | number }} parsed ({{ parsedRatio() | percent:'1.0-2' }})
+            @if (result()!.stats.invalidCount > 0) {
+              <span class="malformed-count"> · {{ result()!.stats.invalidCount | number }} malformed ({{ 1 - parsedRatio() | percent:'1.0-2' }})</span>
+            }
+            @if (result()!.stats.emptyLineCount > 0) {
+              <span class="empty-count"> · {{ result()!.stats.emptyLineCount | number }} empty lines skipped</span>
+            }
+          </span>
+        </div>
+        <progress class="progress-bar" [value]="parsedRatio()" max="1" aria-label="Parsing progress"></progress>
+      </div>
+
+      <div class="status-actions">
+        <app-log-upload [compact]="true"></app-log-upload>
+        <button class="action-button" type="button" (click)="reset()">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          Reset
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="status-empty">
+      <app-log-upload></app-log-upload>
+    </div>
+  }
+</section>

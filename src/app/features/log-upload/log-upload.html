@@ -1,54 +1,76 @@
-<section class="log-upload">
-  <div class="upload-area">
-    <h2 class="upload-heading">Load Access Log</h2>
-    <p class="upload-description">Select an Apache Combined Log Format file to begin investigation.</p>
-    <label class="upload-button" for="log-file-input">
-      @if (loading()) {
-        Reading file…
-      } @else if (result()) {
-        Choose another file
-      } @else {
-        Choose file
-      }
-    </label>
-    <input
-      id="log-file-input"
-      type="file"
-      accept=".log,.txt"
-      class="file-input"
-      [disabled]="loading()"
-      (change)="onFileSelected($event)"
-    />
-    <p class="upload-hint">Supported file types: .log, .txt · Apache Combined Log Format</p>
-  </div>
-
-  @if (error(); as errorMessage) {
-    <div class="error-banner" role="alert">
-      <strong>Error:</strong> {{ errorMessage }}
+@if (compact()) {
+  <label class="upload-button upload-button--compact" for="log-file-input-compact">
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
+      <path d="M8 1v10M4 5l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M2 11v2a2 2 0 002 2h8a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    @if (loading()) {
+      Reading…
+    } @else {
+      Upload log file
+    }
+  </label>
+  <input
+    id="log-file-input-compact"
+    type="file"
+    accept=".log,.txt"
+    class="file-input"
+    [disabled]="loading()"
+    (change)="onFileSelected($event)"
+  />
+} @else {
+  <section class="log-upload">
+    <div class="upload-area">
+      <h2 class="upload-heading">Load Access Log</h2>
+      <p class="upload-description">Select an Apache Combined Log Format file to begin investigation.</p>
+      <label class="upload-button" for="log-file-input">
+        @if (loading()) {
+          Reading file…
+        } @else if (result()) {
+          Choose another file
+        } @else {
+          Choose file
+        }
+      </label>
+      <input
+        id="log-file-input"
+        type="file"
+        accept=".log,.txt"
+        class="file-input"
+        [disabled]="loading()"
+        (change)="onFileSelected($event)"
+      />
+      <p class="upload-hint">Supported file types: .log, .txt · Apache Combined Log Format</p>
     </div>
-  }
 
-  @if (result(); as r) {
-    <div class="parse-summary">
-      <h3 class="summary-heading">{{ fileName() }}</h3>
-      <dl class="stats-grid">
-        <div class="stat">
-          <dt>Total lines</dt>
-          <dd>{{ r.stats.totalLines | number }}</dd>
-        </div>
-        <div class="stat">
-          <dt>Valid records</dt>
-          <dd>{{ r.stats.validCount | number }}</dd>
-        </div>
-        <div class="stat">
-          <dt>Invalid records</dt>
-          <dd [class.has-invalid]="r.stats.invalidCount > 0">{{ r.stats.invalidCount | number }}</dd>
-        </div>
-        <div class="stat">
-          <dt>Empty lines</dt>
-          <dd>{{ r.stats.emptyLineCount | number }}</dd>
-        </div>
-      </dl>
-    </div>
-  }
-</section>
+    @if (error(); as errorMessage) {
+      <div class="error-banner" role="alert">
+        <strong>Error:</strong> {{ errorMessage }}
+      </div>
+    }
+
+    @if (result(); as r) {
+      <div class="parse-summary">
+        <h3 class="summary-heading">{{ fileName() }}</h3>
+        <dl class="stats-grid">
+          <div class="stat">
+            <dt>Total lines</dt>
+            <dd>{{ r.stats.totalLines | number }}</dd>
+          </div>
+          <div class="stat">
+            <dt>Valid records</dt>
+            <dd>{{ r.stats.validCount | number }}</dd>
+          </div>
+          <div class="stat">
+            <dt>Invalid records</dt>
+            <dd [class.has-invalid]="r.stats.invalidCount > 0">{{ r.stats.invalidCount | number }}</dd>
+          </div>
+          <div class="stat">
+            <dt>Empty lines</dt>
+            <dd>{{ r.stats.emptyLineCount | number }}</dd>
+          </div>
+        </dl>
+      </div>
+    }
+  </section>
+}

@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
-import { LogUpload } from './features/log-upload/log-upload';
+import { Dashboard } from './features/dashboard/dashboard';
+import { AppShell } from './features/shell/app-shell';
 
 @Component({
-  imports: [LogUpload],
+  imports: [AppShell, Dashboard],
   selector: 'app-root',
   styleUrl: './app.scss',
   templateUrl: './app.html',
