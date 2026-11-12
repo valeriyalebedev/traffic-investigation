@@ -51,18 +51,18 @@ I deliberately avoided adding NgRx, Web Workers, or streaming parsing at this st
 
 ## Validation
 
-I tested the parser with 41 unit tests and validated it against the supplied dataset: 10,000 lines, 9,999 valid records, and one malformed record (an unclosed User-Agent field).
+I have 51 unit tests across 4 test files, covering the parser, the dataset service, the upload component, and the app shell. I validated the parser against the supplied dataset: 10,000 lines, 9,999 valid records, and one malformed record (an unclosed User-Agent field).
+
+I verified the file upload flow in the browser, including file selection, parsing, result display, and re-selecting the same file after external modification.
 
 One important limitation: timestamps in the dataset are concentrated around minute :05 of each hour between May 17 and May 20, 2015. These are sparse observations, not continuous traffic data, so I cannot reliably infer real traffic spikes.
-
-The tests cover parser behavior but do not establish large-file performance or validate the complete upload and investigation workflow.
 
 ## Implementation Steps
 
 - [x] Set up the Angular project and development environment.
 - [x] Implement the Apache Combined Log Format parser with validation.
 - [x] Add parser unit tests and validate against the supplied dataset.
-- [ ] Add file upload and connect it to the parser.
+- [x] Add file upload and connect it to the parser.
 - [ ] Aggregate traffic by source IP, including request counts, status codes, methods, and time ranges.
 - [ ] Build a chronological investigation view for a selected source.
 - [ ] Implement explainable detection rules for vulnerability path probing, repeated failed resources, and repeated request patterns.

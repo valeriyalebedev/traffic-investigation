@@ -1,0 +1,54 @@
+<section class="log-upload">
+  <div class="upload-area">
+    <h2 class="upload-heading">Load Access Log</h2>
+    <p class="upload-description">Select an Apache Combined Log Format file to begin investigation.</p>
+    <label class="upload-button" for="log-file-input">
+      @if (loading()) {
+        Reading file…
+      } @else if (result()) {
+        Choose another file
+      } @else {
+        Choose file
+      }
+    </label>
+    <input
+      id="log-file-input"
+      type="file"
+      accept=".log,.txt"
+      class="file-input"
+      [disabled]="loading()"
+      (change)="onFileSelected($event)"
+    />
+    <p class="upload-hint">Supported file types: .log, .txt · Apache Combined Log Format</p>
+  </div>
+
+  @if (error(); as errorMessage) {
+    <div class="error-banner" role="alert">
+      <strong>Error:</strong> {{ errorMessage }}
+    </div>
+  }
+
+  @if (result(); as r) {
+    <div class="parse-summary">
+      <h3 class="summary-heading">{{ fileName() }}</h3>
+      <dl class="stats-grid">
+        <div class="stat">
+          <dt>Total lines</dt>
+          <dd>{{ r.stats.totalLines | number }}</dd>
+        </div>
+        <div class="stat">
+          <dt>Valid records</dt>
+          <dd>{{ r.stats.validCount | number }}</dd>
+        </div>
+        <div class="stat">
+          <dt>Invalid records</dt>
+          <dd [class.has-invalid]="r.stats.invalidCount > 0">{{ r.stats.invalidCount | number }}</dd>
+        </div>
+        <div class="stat">
+          <dt>Empty lines</dt>
+          <dd>{{ r.stats.emptyLineCount | number }}</dd>
+        </div>
+      </dl>
+    </div>
+  }
+</section>
