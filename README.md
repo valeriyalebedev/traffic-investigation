@@ -63,6 +63,20 @@ The "Traffic over time" chart provides a global traffic overview across all sour
 
 All timestamps are displayed in UTC. The complete dataset period fits within the chart width without horizontal scrolling. Bucketing is applied only for visualization; original log records are preserved unchanged and remain available for source-level investigation.
 
+### HTTP status codes
+
+The status code chart groups responses by HTTP status class rather than individual codes:
+
+- **2xx Success** — successful responses (e.g. 200, 201, 204)
+- **3xx Redirection** — redirect responses (e.g. 301, 302, 304)
+- **4xx Client errors** — client-side request errors (e.g. 400, 403, 404)
+- **5xx Server errors** — server-side errors (e.g. 500, 502, 503)
+- **Other** — status codes outside the 200–599 range
+
+Each class shows its count and percentage. Hovering or focusing a donut segment or legend item reveals a tooltip with a description, common examples, and for the Other group the actual status codes found in the dataset.
+
+Status classes use semantic colors to aid visual scanning. These colors represent HTTP response categories, not security severity — a 4xx response is not inherently an attack.
+
 ## Implementation Steps
 
 - [x] Set up the Angular project and development environment.

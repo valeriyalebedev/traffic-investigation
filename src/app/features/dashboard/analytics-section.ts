@@ -1,5 +1,6 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
+import { aggregateByStatusClass, StatusClassGroup } from '../../analysis/aggregation/status-code-breakdown';
 import { aggregateByTimeBucket, TimeBucket } from '../../analysis/aggregation/time-buckets';
 import { DatasetService } from '../../core/services/dataset.service';
 
@@ -157,6 +158,65 @@ export class AnalyticsSection {
     if (!pt) return true;
     return (pt.y - this.paddingTop) >= 42;
   });
+
+  // --- Status code donut ---
+
+  protected readonly statusGroups = computed(() => {
+    const r = this.dataset.result();
+    return r ? aggregateByStatusClass(r.records) : [];
+  });
+
+  protected readonly hasStatusData = computed(() => this.statusGroups().length > 0);
+
+  protected readonly donutRadius = 54;
+  protected readonly donutStroke = 18;
+  protected readonly donutCircumference = 2 * Math.PI * this.donutRadius;
+
+  private static readonly CLASS_COLORS: Record<string, string> = {
+    '2xx': '#16A34A',
+    '3xx': '#3B82F6',
+    '4xx': '#D97706',
+    '5xx': '#DC2626',
+    'other': '#A1A1AA',
+  };
+
+  protected classColor(group: StatusClassGroup): string {
+    return AnalyticsSection.CLASS_COLORS[group.classRange] ?? '#A1A1AA';
+  }
+
+  protected readonly donutSegments = computed(() => {
+    const groups = this.statusGroups();
+    const C = this.donutCircumference;
+    const segments: { group: StatusClassGroup; dashArray: string; dashOffset: number; color: string }[] = [];
+    let offset = C * 0.25;
+
+    for (const group of groups) {
+      const len = (group.percentage / 100) * C;
+      segments.push({
+        group,
+        dashArray: `${len} ${C - len}`,
+        dashOffset: -offset,
+        color: this.classColor(group),
+      });
+      offset += len;
+    }
+    return segments;
+  });
+
+  protected readonly totalRequests = computed(() => {
+    const groups = this.statusGroups();
+    return groups.reduce((sum, g) => sum + g.count, 0);
+  });
+
+  protected readonly activeSegment = signal<StatusClassGroup | null>(null);
+
+  protected onSegmentEnter(group: StatusClassGroup): void {
+    this.activeSegment.set(group);
+  }
+
+  protected onSegmentLeave(): void {
+    this.activeSegment.set(null);
+  }
 }
 
 function niceStep(max: number, targetTicks: number): number {

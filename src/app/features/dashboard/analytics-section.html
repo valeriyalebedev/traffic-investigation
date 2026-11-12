@@ -99,8 +99,74 @@
     <div class="panel-header">
       <h3 class="panel-title">HTTP status codes</h3>
     </div>
-    <div class="panel-empty">
-      <p>Load a log file to see status code breakdown</p>
-    </div>
+    @if (hasStatusData()) {
+      <div class="donut-layout">
+        <div class="donut-chart">
+          <svg viewBox="0 0 140 140" width="140" height="140"
+               role="img" aria-label="HTTP status code distribution donut chart">
+            @for (seg of donutSegments(); track seg.group.label) {
+              <circle class="donut-segment"
+                      cx="70" cy="70"
+                      [attr.r]="donutRadius"
+                      fill="none"
+                      [attr.stroke]="seg.color"
+                      [attr.stroke-width]="donutStroke"
+                      [attr.stroke-dasharray]="seg.dashArray"
+                      [attr.stroke-dashoffset]="seg.dashOffset"
+                      [class.donut-segment--active]="activeSegment()?.classRange === seg.group.classRange"
+                      (mouseenter)="onSegmentEnter(seg.group)"
+                      (mouseleave)="onSegmentLeave()"
+                      (focus)="onSegmentEnter(seg.group)"
+                      (blur)="onSegmentLeave()"
+                      tabindex="0"
+                      [attr.aria-label]="seg.group.label + ': ' + seg.group.count + ' requests (' + seg.group.percentage + '%)'"/>
+            }
+          </svg>
+          <span class="donut-center" aria-hidden="true">{{ totalRequests() | number }}</span>
+        </div>
+        <div class="donut-side">
+          <ul class="donut-legend" aria-label="Status code breakdown">
+            @for (group of statusGroups(); track group.label) {
+              <li class="legend-item"
+                  [class.legend-item--active]="activeSegment()?.classRange === group.classRange"
+                  (mouseenter)="onSegmentEnter(group)"
+                  (mouseleave)="onSegmentLeave()">
+                <span class="legend-swatch" [style.background]="classColor(group)" aria-hidden="true"></span>
+                <span class="legend-label">{{ group.label }}</span>
+                <span class="legend-count">{{ group.count | number }}</span>
+                <span class="legend-pct">{{ group.percentage }}%</span>
+              </li>
+            }
+          </ul>
+          @if (activeSegment(); as seg) {
+            <div class="status-tooltip" role="tooltip">
+              <p class="status-tooltip__title">{{ seg.label }}</p>
+              <p class="status-tooltip__stats">{{ seg.count | number }} requests · {{ seg.percentage }}%</p>
+              <p class="status-tooltip__desc">{{ seg.description }}</p>
+              @if (seg.details.length > 0) {
+                <table class="status-tooltip__codes" aria-label="Status codes in this category">
+                  <tbody>
+                    @for (d of seg.details; track d.code) {
+                      <tr>
+                        <td class="status-tooltip__code">{{ d.code }}</td>
+                        <td class="status-tooltip__code-desc">{{ d.description }}</td>
+                        <td class="status-tooltip__code-count">{{ d.count | number }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              }
+              @if (seg.note) {
+                <p class="status-tooltip__note">{{ seg.note }}</p>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="panel-empty">
+        <p>Load a log file to see status code breakdown</p>
+      </div>
+    }
   </div>
 </section>
