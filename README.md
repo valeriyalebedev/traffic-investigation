@@ -51,7 +51,7 @@ I deliberately avoided adding NgRx, Web Workers, or streaming parsing at this st
 
 ## Validation
 
-I have 51 unit tests across 4 test files, covering the parser, the dataset service, the upload component, and the app shell. I validated the parser against the supplied dataset: 10,000 lines, 9,999 valid records, and one malformed record (an unclosed User-Agent field).
+I have 159 unit tests across 11 test files, covering the parser, the dataset service, the upload component, the app shell, traffic aggregation, time bucketing, hourly traffic, request timeline, status code breakdown, and detection rules. I validated the parser against the supplied dataset: 10,000 lines, 9,999 valid records, and one malformed record (an unclosed User-Agent field).
 
 I verified the file upload flow in the browser, including file selection, parsing, result display, and re-selecting the same file after external modification.
 
@@ -77,16 +77,38 @@ Each class shows its count and percentage. Hovering or focusing a donut segment 
 
 Status classes use semantic colors to aid visual scanning. These colors represent HTTP response categories, not security severity — a 4xx response is not inherently an attack.
 
+### Detection rules
+
+Three detection heuristics run automatically when a dataset is loaded. Each finding references actual log records and explains why the rule matched.
+
+All three rules are simplified heuristics and can produce false positives and false negatives. These findings identify suspicious or potentially automated behavior, not confirmed bots or malicious activity. IP addresses identify traffic sources, not individual users. Further investigation and additional signals are required for reliable classification.
+
+**VULNERABILITY_PATH_PROBING** (Possible scanning) — Detects repeated requests to known sensitive or vulnerable URL paths (e.g. `/phpmyadmin/`, `/.env`, `/wp-login.php`). Threshold: >= 3 requests to sensitive paths from the same IP. Path matching is case-insensitive, uses the URL path without query parameters, and avoids substring matches against generic words. Severity is based on hit count and path diversity: high at 10+ hits or 5+ distinct paths, medium at 5+ hits or 3+ paths, low otherwise.
+
+*Limitation:* Relies on a predefined list of sensitive paths. Novel attack paths not in the list are not detected. Response codes are not considered — requests returning 200 are counted equally with 404.
+
+**REPEATED_FAILED_RESOURCE** (Unusual traffic) — Detects repeated failed requests to the same resource. Threshold: >= 5 requests to the same normalized path from the same IP, with >= 80% 4xx responses. Only 4xx responses count as failures. Severity: high at 15+ requests with 95%+ failure rate, medium at 10+ requests or 90%+ rate, low otherwise.
+
+*Limitation:* Only HTTP 4xx counts as failure; 5xx is excluded. Path normalization strips query parameters and case, but structurally similar paths with different segments are treated as different resources. Cannot distinguish a misconfigured crawler from intentional probing.
+
+**REPEATED_REQUEST_PATTERNS** (Potential automation) — Detects repeated request sequences from the same IP. Requires at least 3 consecutive repetitions of the same ordered sequence of at least 3 HTTP method + normalized path pairs. Paths are normalized (lowercase, query parameters stripped). Three identical individual requests do not constitute a repeated sequence. Severity: high at 5+ repetitions with sequences of 4+, medium at 4+ repetitions or sequences of 5+, low otherwise.
+
+*Limitation:* The current implementation detects exact consecutive repetitions of an ordered sequence of HTTP method and normalized path pairs. This makes the rule explainable and predictable, but restrictive. Similar recurring behavior with occasional interruptions or unrelated requests may not be detected.
+
+*Future improvement:* Detect recurring behavioral patterns across a longer request history, allowing occasional interruptions and variations, and combining sequence similarity with request frequency and timing regularity.
+
+Severity is an investigation priority, not a probability of malicious intent. Missing User-Agent and HTTP 404 responses alone never trigger findings.
+
 ## Implementation Steps
 
 - [x] Set up the Angular project and development environment.
 - [x] Implement the Apache Combined Log Format parser with validation.
 - [x] Add parser unit tests and validate against the supplied dataset.
 - [x] Add file upload and connect it to the parser.
-- [ ] Aggregate traffic by source IP, including request counts, status codes, methods, and time ranges.
-- [ ] Build a chronological investigation view for a selected source.
-- [ ] Implement explainable detection rules for vulnerability path probing, repeated failed resources, and repeated request patterns.
-- [ ] Bring the investigation workflow together in one accessible, responsive screen.
+- [x] Aggregate traffic by source IP, including request counts, status codes, methods, and time ranges.
+- [x] Build a chronological investigation view for a selected source.
+- [x] Implement explainable detection rules for vulnerability path probing, repeated failed resources, and repeated request patterns.
+- [x] Bring the investigation workflow together in one accessible, responsive screen.
 
 ## AI Usage
 

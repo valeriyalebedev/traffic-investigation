@@ -1,6 +1,7 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { aggregateByIp } from '../../analysis/aggregation/traffic-aggregation';
+import { runDetection } from '../../analysis/detection/run-detection';
 import { DatasetService } from '../../core/services/dataset.service';
 
 @Component({
@@ -32,5 +33,11 @@ export class KpiCards {
     const r = this.dataset.result();
     if (!r || r.records.length === 0) return null;
     return new Set(r.records.map(rec => rec.userAgent)).size;
+  });
+
+  protected readonly findingCount = computed(() => {
+    const r = this.dataset.result();
+    if (!r) return null;
+    return runDetection(r.records).length;
   });
 }

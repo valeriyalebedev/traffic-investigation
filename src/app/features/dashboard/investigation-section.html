@@ -1,0 +1,334 @@
+<section class="investigation-row" aria-label="Investigation">
+  <div class="panel panel--findings">
+    <div class="panel-header">
+      <svg viewBox="0 0 20 20" width="20" height="20" fill="none" aria-hidden="true">
+        <circle cx="10" cy="10" r="6" stroke="var(--color-accent)" stroke-width="1.5"/>
+        <circle cx="10" cy="10" r="2.5" fill="var(--color-accent)"/>
+        <path d="M10 2v3M10 15v3M2 10h3M15 10h3" stroke="var(--color-accent)" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <h3 class="panel-title">Investigation findings</h3>
+      @if (findings().length > 0) {
+        <span class="findings-badge">{{ findings().length }} {{ findings().length === 1 ? 'finding' : 'findings' }}</span>
+      }
+      <button class="rules-info-btn" type="button"
+              [attr.aria-expanded]="showRulesInfo()"
+              aria-controls="rules-doc-panel"
+              aria-label="Detection rules documentation"
+              (click)="toggleRulesInfo()">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
+          <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M8 7.2V11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <circle cx="8" cy="5.2" r="0.7" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+    @if (showRulesInfo()) {
+      <div class="rules-doc" id="rules-doc-panel">
+        <p class="rules-doc-note">All three rules are simplified heuristics and can produce false positives and false negatives. Severity indicates investigation priority, not a probability of malicious activity. Conditions are evaluated in order: HIGH first, then MEDIUM, then LOW.</p>
+
+        <div class="rules-doc-rule">
+          <h4 class="rules-doc-name">Vulnerability Path Probing <span class="behavior-tag">Possible scanning</span></h4>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label">Detection</span>
+            <span>≥ 3 requests to known sensitive paths from the same IP.</span>
+          </div>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label severity-badge severity--high">High</span>
+            <span>≥ 10 requests <strong>or</strong> ≥ 5 distinct sensitive paths.</span>
+          </div>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label severity-badge severity--medium">Medium</span>
+            <span>≥ 5 requests <strong>or</strong> ≥ 3 distinct sensitive paths.</span>
+          </div>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label severity-badge severity--low">Low</span>
+            <span>Detection threshold met, but neither higher condition applies.</span>
+          </div>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label">Limitation</span>
+            <span>Relies on a predefined list of sensitive paths. Novel attack paths not in the list are not detected. Response codes are not considered — requests returning 200 are counted equally with 404.</span>
+          </div>
+        </div>
+
+        <div class="rules-doc-rule">
+          <h4 class="rules-doc-name">Repeated Failed Resource <span class="behavior-tag">Unusual traffic</span></h4>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label">Detection</span>
+            <span>≥ 5 requests to the same normalized path from the same IP, with ≥ 80% HTTP 4xx responses.</span>
+          </div>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label severity-badge severity--high">High</span>
+            <span>≥ 15 requests <strong>and</strong> ≥ 95% failure rate.</span>
+          </div>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label severity-badge severity--medium">Medium</span>
+            <span>≥ 10 requests <strong>or</strong> ≥ 90% failure rate.</span>
+          </div>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label severity-badge severity--low">Low</span>
+            <span>Detection threshold met, but neither higher condition applies.</span>
+          </div>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label">Limitation</span>
+            <span>Only HTTP 4xx counts as failure; 5xx is excluded. Path normalization strips query parameters and case, but structurally similar paths with different segments are treated as different resources. Cannot distinguish a misconfigured crawler from intentional probing.</span>
+          </div>
+        </div>
+
+        <div class="rules-doc-rule">
+          <h4 class="rules-doc-name">Repeated Request Pattern <span class="behavior-tag">Potential automation</span></h4>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label">Detection</span>
+            <span>≥ 3 consecutive repetitions of the same ordered sequence of ≥ 3 HTTP method + normalized path pairs.</span>
+          </div>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label severity-badge severity--high">High</span>
+            <span>≥ 5 repetitions <strong>and</strong> sequence length ≥ 4.</span>
+          </div>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label severity-badge severity--medium">Medium</span>
+            <span>≥ 4 repetitions <strong>or</strong> sequence length ≥ 5.</span>
+          </div>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label severity-badge severity--low">Low</span>
+            <span>Detection threshold met, but neither higher condition applies.</span>
+          </div>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label">Limitation</span>
+            <span>Detects exact consecutive repetitions of an ordered sequence of HTTP method and normalized path pairs. This makes the rule explainable and predictable, but restrictive. Similar recurring behavior with occasional interruptions or unrelated requests may not be detected.</span>
+          </div>
+          <div class="rules-doc-section">
+            <span class="rules-doc-label">Improvement</span>
+            <span>Future improvements could detect recurring behavioral patterns across a longer request history, allowing occasional interruptions and variations, and combining sequence similarity with request frequency and timing regularity.</span>
+          </div>
+        </div>
+
+        <p class="rules-doc-note">These findings identify suspicious or potentially automated behavior, not confirmed bots or malicious activity. IP addresses identify traffic sources, not individual users. Further investigation and additional signals are required for reliable classification.</p>
+      </div>
+    }
+    @if (findings().length > 0) {
+      <p class="findings-subtitle">Sources with unusual traffic patterns, based on predefined detection rules.</p>
+      <div class="findings-table-header" aria-hidden="true">
+        <span class="fth-finding">Finding</span>
+        <span class="fth-ip">Source IP</span>
+        <span class="fth-count" title="Number of requests matching this specific detection rule, not the total for the source IP">Matched</span>
+        <span class="fth-time">Time range (UTC)</span>
+        <span class="fth-severity">Severity</span>
+        <span></span>
+      </div>
+      <ul class="findings-list" role="listbox" aria-label="Detection findings">
+        @for (finding of findings(); track finding.ip + finding.rule + finding.summary) {
+          <li class="finding-item"
+              role="option"
+              [class.finding-item--selected]="selectedIp() === finding.ip"
+              [attr.aria-selected]="selectedIp() === finding.ip"
+              tabindex="0"
+              (click)="selectFinding(finding)"
+              (keydown.enter)="selectFinding(finding)"
+              (keydown.space)="selectFinding(finding); $event.preventDefault()">
+            <div class="fi-finding">
+              <span class="fi-rule">{{ ruleLabel(finding.rule) }} <span class="behavior-tag" title="Heuristic behavioral interpretation, not a definitive classification">{{ behaviorTag(finding.rule) }}</span></span>
+              <span class="fi-desc" [title]="ruleDescription(finding.rule)">{{ ruleDescription(finding.rule) }}</span>
+            </div>
+            <div class="fi-ip" [title]="finding.ip">{{ finding.ip }}</div>
+            <div class="fi-count" [title]="finding.requestCount + ' requests matching this detection rule, not the total for the source IP'">{{ finding.requestCount }}</div>
+            <div class="fi-time" [title]="(finding.firstSeen | date:'d MMM yyyy HH:mm':'UTC') + ' – ' + (finding.lastSeen | date:'d MMM yyyy HH:mm':'UTC')">{{ finding.firstSeen | date:'d MMM HH:mm':'UTC' }} – {{ finding.lastSeen | date:'d MMM HH:mm':'UTC' }}</div>
+            <div class="fi-severity">
+              <span class="severity-badge" [class]="severityClass(finding.severity)">{{ finding.severity }}</span>
+            </div>
+            <button class="fi-chevron-btn" type="button"
+                    aria-label="Toggle finding details"
+                    [class.fi-chevron-btn--expanded]="expandedFindingId() === findingId(finding)"
+                    [attr.aria-expanded]="expandedFindingId() === findingId(finding)"
+                    [attr.aria-label]="(expandedFindingId() === findingId(finding) ? 'Collapse' : 'Expand') + ' details for ' + ruleLabel(finding.rule)"
+                    (click)="toggleExpansion(finding, $event)"
+                    (keydown.enter)="$event.stopPropagation()"
+                    (keydown.space)="$event.stopPropagation()">
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
+                <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            @if (expandedFindingId() === findingId(finding)) {
+              <div class="finding-details">
+                <p class="fd-condition">{{ ruleCondition(finding.rule) }}</p>
+                <dl class="fd-grid">
+                  @for (row of findingDetailRows(finding); track row.label) {
+                    <dt class="fd-label">{{ row.label }}</dt>
+                    <dd class="fd-value">{{ row.value }}</dd>
+                  }
+                </dl>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    } @else {
+      <div class="panel-empty">
+        <p>No findings yet. Load a log file to run detection rules.</p>
+      </div>
+    }
+  </div>
+
+  <div class="panel panel--source">
+    <div class="panel-header">
+      <h3 class="panel-title">
+        Source investigation@if (selectedIp()) {<span class="panel-title-ip">: {{ selectedIp() }}</span>}
+      </h3>
+      @if (priorityLabel(); as priority) {
+        <span class="priority-badge" [class]="severityClass(highestSeverity()!)">{{ priority }}</span>
+      }
+      @for (tag of sourceBehaviorTags(); track tag) {
+        <span class="behavior-tag" title="Heuristic behavioral interpretation, not a definitive classification">{{ tag }}</span>
+      }
+      @if (selectedIp()) {
+        <button class="clear-btn" type="button" (click)="clearSelection()" aria-label="Clear selection">✕</button>
+      }
+    </div>
+    @if (sourceSummary(); as summary) {
+      <div class="tab-bar" role="tablist" aria-label="Investigation tabs">
+        <button class="tab" role="tab" type="button"
+                [class.tab--active]="activeTab() === 'overview'"
+                [attr.aria-selected]="activeTab() === 'overview'"
+                (click)="selectTab('overview')">Overview</button>
+        <button class="tab" role="tab" type="button"
+                [class.tab--active]="activeTab() === 'requests'"
+                [attr.aria-selected]="activeTab() === 'requests'"
+                (click)="selectTab('requests')">Requests ({{ sourceTimeline().length }})</button>
+        <button class="tab" role="tab" type="button"
+                [class.tab--active]="activeTab() === 'timeline'"
+                [attr.aria-selected]="activeTab() === 'timeline'"
+                (click)="selectTab('timeline')">Timeline</button>
+      </div>
+
+      <div class="tab-content">
+        @if (activeTab() === 'overview') {
+          <div class="overview-metrics">
+            @for (card of metricCards(); track card.label) {
+              <div class="metric-card" [title]="card.tooltip ?? card.value">
+                <svg class="metric-icon" viewBox="0 0 20 20" width="18" height="18" fill="none" aria-hidden="true">
+                  @if (card.icon === 'requests') {
+                    <path d="M4 8h12M4 12h12M4 16h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  } @else if (card.icon === 'clock') {
+                    <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M10 6v4l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  } @else if (card.icon === 'status') {
+                    <path d="M10 3l7 14H3L10 3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                    <path d="M10 9v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <circle cx="10" cy="14.5" r="0.5" fill="currentColor"/>
+                  } @else if (card.icon === 'agent') {
+                    <circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M3 18c0-3 3.1-5.5 7-5.5s7 2.5 7 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  }
+                </svg>
+                <div class="metric-body">
+                  <span class="metric-value">{{ card.value }}</span>
+                  <span class="metric-label">{{ card.label }}</span>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="overview-details">
+            @if (evidenceIndicators().length > 0) {
+              <div class="detail-section">
+                <h4 class="detail-title">Detection evidence</h4>
+                <ul class="indicator-list">
+                  @for (indicator of evidenceIndicators(); track indicator) {
+                    <li class="indicator-item">
+                      <svg class="indicator-check" viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
+                        <circle cx="8" cy="8" r="7" fill="var(--color-success)" opacity="0.15"/>
+                        <path d="M5 8l2 2 4-4" stroke="var(--color-success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      {{ indicator }}
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+            @if (analystAssessment()) {
+              <div class="detail-section">
+                <h4 class="detail-title">Analyst assessment</h4>
+                <p class="assessment-text" [title]="analystAssessment()!">{{ analystAssessment() }}</p>
+              </div>
+            }
+          </div>
+
+          @if (sourceFindings().length > 0) {
+            <div class="evidence-cards">
+              @for (f of sourceFindings(); track f.rule + f.summary) {
+                <div class="evidence-card">
+                  <div class="evidence-header">
+                    <span class="severity-badge" [class]="severityClass(f.severity)">{{ f.severity }}</span>
+                    <span class="evidence-rule">{{ ruleLabel(f.rule) }}</span>
+                  </div>
+                  <p class="evidence-desc" [title]="f.description">{{ f.description }}</p>
+                  <p class="evidence-meta" title="Requests that contributed to this specific detection, out of all requests from this source IP">{{ f.evidenceRecords.length }} matching requests out of {{ sourceSummary()!.requestCount }} total · {{ f.firstSeen | date:'d MMM HH:mm':'UTC' }} – {{ f.lastSeen | date:'d MMM HH:mm':'UTC' }}</p>
+                </div>
+              }
+            </div>
+          }
+        }
+
+        @if (activeTab() === 'requests') {
+          <div class="requests-filter" role="group" aria-label="Request filter">
+            <button class="filter-btn" type="button"
+                    [class.filter-btn--active]="requestsFilter() === 'all'"
+                    [attr.aria-pressed]="requestsFilter() === 'all'"
+                    (click)="requestsFilter.set('all')">All requests ({{ sourceTimeline().length }})</button>
+            <button class="filter-btn" type="button"
+                    [class.filter-btn--active]="requestsFilter() === 'matched'"
+                    [attr.aria-pressed]="requestsFilter() === 'matched'"
+                    (click)="requestsFilter.set('matched')">Matched only ({{ matchedRequestCount() }})</button>
+          </div>
+          <div class="requests-wrap">
+            <table class="timeline-table" aria-label="Chronological request log">
+              <thead>
+                <tr>
+                  <th>Time (UTC)</th>
+                  <th>Method</th>
+                  <th>Path</th>
+                  <th>Status</th>
+                  <th>Size</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (record of filteredTimeline(); track record.lineNumber) {
+                  <tr [class.timeline-row--evidence]="isEvidence(record)">
+                    <td class="cell-time">{{ record.timestamp | date:'d MMM HH:mm:ss':'UTC' }}</td>
+                    <td class="cell-method">{{ record.method }}</td>
+                    <td class="cell-path" [title]="record.path">{{ record.path }}</td>
+                    <td class="cell-status">{{ record.statusCode }}</td>
+                    <td class="cell-size">{{ record.responseSize !== null ? (record.responseSize | number) : '–' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (activeTab() === 'timeline') {
+          <div class="compact-timeline">
+            @for (event of timelineEvents(); track event.record.lineNumber) {
+              @if (event.gapSeconds !== null) {
+                <div class="tl-gap" role="separator">
+                  <span class="tl-gap-line"></span>
+                  <span class="tl-gap-label">{{ formatGap(event.gapSeconds) }} gap</span>
+                  <span class="tl-gap-line"></span>
+                </div>
+              }
+              <div class="tl-event" [class.tl-event--evidence]="event.isEvidence">
+                <span class="tl-time">{{ event.record.timestamp | date:'d MMM HH:mm:ss':'UTC' }}</span>
+                <span class="tl-method">{{ event.record.method }}</span>
+                <span class="tl-path" [title]="event.record.path">{{ event.record.path }}</span>
+                <span class="tl-status" [class.tl-status--err]="event.record.statusCode >= 400">{{ event.record.statusCode }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="panel-empty">
+        <p>Select a finding to investigate the source</p>
+      </div>
+    }
+  </div>
+</section>

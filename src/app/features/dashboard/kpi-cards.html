@@ -49,7 +49,7 @@
       </svg>
     </div>
     <div class="kpi-content">
-      <span class="kpi-value">—</span>
+      <span class="kpi-value">{{ findingCount() !== null ? (findingCount() | number) : '—' }}</span>
       <span class="kpi-label">Investigation findings</span>
     </div>
   </div>
