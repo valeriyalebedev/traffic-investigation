@@ -40,6 +40,9 @@
         [disabled]="loading()"
         (change)="onFileSelected($event)"
       />
+      @if (!result() && !loading()) {
+        <p class="sample-line">or <button class="sample-link" type="button" (click)="loadSample()">load sample dataset</button></p>
+      }
       <p class="upload-hint">Supported file types: .log, .txt · Apache Combined Log Format</p>
     </div>
 

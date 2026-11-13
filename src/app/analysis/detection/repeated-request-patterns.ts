@@ -1,9 +1,16 @@
 import { LogRecord } from '../../core/models/log-record';
 import { Finding, Severity } from './detection-models';
 
+/** Minimum number of distinct steps (method + path pairs) in a detected sequence. */
 export const PATTERN_MIN_SEQUENCE_LENGTH = 3;
+/** Minimum number of consecutive repetitions of the sequence. */
 export const PATTERN_MIN_REPETITIONS = 3;
 
+/**
+ * Detects repeated consecutive request sequences from the same IP.
+ * Returns at most one finding per IP, selecting the match that covers the most records.
+ * Sequences must contain more than one unique step to avoid matching simple repeated requests.
+ */
 export function detectRepeatedRequestPatterns(records: readonly LogRecord[]): Finding[] {
   const byIp = new Map<string, LogRecord[]>();
 
@@ -48,6 +55,15 @@ interface SequenceMatch {
   evidenceRecords: LogRecord[];
 }
 
+/**
+ * Searches for a consecutive repeated sequence of request signatures.
+ *
+ * Uses a sliding window: for each candidate sequence length (starting at the minimum),
+ * checks every starting position for consecutive repetitions of that exact sequence.
+ * Returns the first match that covers the most records, or `null` if no sequence
+ * meets both the minimum length and minimum repetition thresholds.
+ * Stops after finding the first qualifying sequence length with a match.
+ */
 function findRepeatedSequence(sorted: LogRecord[]): SequenceMatch | null {
   if (sorted.length < PATTERN_MIN_SEQUENCE_LENGTH * PATTERN_MIN_REPETITIONS) return null;
 

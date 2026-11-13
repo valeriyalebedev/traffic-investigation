@@ -6,6 +6,7 @@ import { detectVulnerabilityPathProbing } from './vulnerability-path-probing';
 
 const SEVERITY_ORDER = { high: 0, medium: 1, low: 2 } as const;
 
+/** Runs all detection rules and returns findings sorted by severity (high first), then request count descending. */
 export function runDetection(records: readonly LogRecord[]): Finding[] {
   const findings: Finding[] = [
     ...detectVulnerabilityPathProbing(records),

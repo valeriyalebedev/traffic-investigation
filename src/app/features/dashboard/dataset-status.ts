@@ -17,6 +17,7 @@ export class DatasetStatus {
   protected readonly fileName = this.dataset.fileName;
   protected readonly loading = this.dataset.loading;
   protected readonly error = this.dataset.error;
+  protected readonly isSampleData = this.dataset.isSampleData;
 
   protected readonly parsedRatio = computed(() => {
     const r = this.result();

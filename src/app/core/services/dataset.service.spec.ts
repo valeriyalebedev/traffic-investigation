@@ -8,6 +8,22 @@ function makeFile(content: string, name = 'test.log'): File {
   return new File([content], name, { type: 'text/plain' });
 }
 
+function mockFetchOk(content: string): void {
+  vi.spyOn(globalThis, 'fetch').mockImplementation(
+    () => Promise.resolve(new Response(content, { status: 200 })),
+  );
+}
+
+function mockFetchError(status: number): void {
+  vi.spyOn(globalThis, 'fetch').mockImplementation(
+    () => Promise.resolve(new Response('', { status })),
+  );
+}
+
+function mockFetchReject(message: string): void {
+  vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError(message));
+}
+
 describe('DatasetService', () => {
   let service: DatasetService;
 
@@ -16,11 +32,16 @@ describe('DatasetService', () => {
     service = TestBed.inject(DatasetService);
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('starts with empty state', () => {
     expect(service.fileName()).toBeNull();
     expect(service.result()).toBeNull();
     expect(service.loading()).toBe(false);
     expect(service.error()).toBeNull();
+    expect(service.isSampleData()).toBe(false);
   });
 
   it('loads and parses a valid file', async () => {
@@ -30,6 +51,7 @@ describe('DatasetService', () => {
     expect(service.fileName()).toBe('access.log');
     expect(service.loading()).toBe(false);
     expect(service.error()).toBeNull();
+    expect(service.isSampleData()).toBe(false);
 
     const result = service.result();
     expect(result).not.toBeNull();
@@ -93,5 +115,69 @@ describe('DatasetService', () => {
     expect(service.result()).toBeNull();
     expect(service.error()).toBeNull();
     expect(service.loading()).toBe(false);
+    expect(service.isSampleData()).toBe(false);
+  });
+
+  describe('loadSampleData', () => {
+    it('loads and parses sample data on success', async () => {
+      const content = `${VALID_LINE}\n${VALID_LINE}\n`;
+      mockFetchOk(content);
+
+      await service.loadSampleData();
+
+      expect(service.fileName()).toBe(DatasetService.SAMPLE_FILE_NAME);
+      expect(service.isSampleData()).toBe(true);
+      expect(service.loading()).toBe(false);
+      expect(service.error()).toBeNull();
+      expect(service.result()!.stats.validCount).toBe(2);
+      expect(globalThis.fetch).toHaveBeenCalledWith(DatasetService.SAMPLE_DATA_URL);
+    });
+
+    it('sets error on HTTP 404 and does not mark as sample data', async () => {
+      mockFetchError(404);
+
+      await service.loadSampleData();
+
+      expect(service.error()).toBe('Failed to load sample dataset (HTTP 404)');
+      expect(service.isSampleData()).toBe(false);
+      expect(service.result()).toBeNull();
+      expect(service.fileName()).toBeNull();
+      expect(service.loading()).toBe(false);
+    });
+
+    it('sets error on network failure and does not mark as sample data', async () => {
+      mockFetchReject('Failed to fetch');
+
+      await service.loadSampleData();
+
+      expect(service.error()).toBe('Failed to fetch');
+      expect(service.isSampleData()).toBe(false);
+      expect(service.result()).toBeNull();
+      expect(service.loading()).toBe(false);
+    });
+
+    it('resets isSampleData when a user file is loaded after sample', async () => {
+      mockFetchOk(VALID_LINE);
+      await service.loadSampleData();
+      expect(service.isSampleData()).toBe(true);
+
+      await service.loadFile(makeFile(VALID_LINE, 'user.log'));
+      expect(service.isSampleData()).toBe(false);
+      expect(service.fileName()).toBe('user.log');
+    });
+
+    it('resets isSampleData on clear and allows reloading sample', async () => {
+      mockFetchOk(`${VALID_LINE}\n`);
+      await service.loadSampleData();
+      expect(service.isSampleData()).toBe(true);
+
+      service.clear();
+      expect(service.isSampleData()).toBe(false);
+      expect(service.result()).toBeNull();
+
+      await service.loadSampleData();
+      expect(service.isSampleData()).toBe(true);
+      expect(service.result()).not.toBeNull();
+    });
   });
 });

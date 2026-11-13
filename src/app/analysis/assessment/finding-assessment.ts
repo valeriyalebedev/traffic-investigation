@@ -18,6 +18,7 @@ const TOOL_PATTERNS: readonly [string, string][] = [
   ['wget/', 'wget'],
 ];
 
+/** Returns a human-readable automation tool name if the User-Agent matches a known pattern, or `null`. */
 export function identifyAutomationTool(userAgent: string): string | null {
   if (!userAgent || userAgent === '-') return null;
   const ua = userAgent.toLowerCase();
@@ -27,6 +28,7 @@ export function identifyAutomationTool(userAgent: string): string | null {
   return null;
 }
 
+/** Returns a prose analyst assessment combining rule-specific context with User-Agent identification. */
 export function findingAssessment(finding: Finding): string {
   const base = ruleBaseAssessment(finding.rule);
   const context = userAgentContext(finding);

@@ -39,6 +39,13 @@ const SENSITIVE_PATH_LIST: string[] = [
 
 const normalizedSet = new Set(SENSITIVE_PATH_LIST.map(p => p.toLowerCase()));
 
+/**
+ * Tests whether a URL path matches the predefined sensitive path list.
+ *
+ * Directory paths (trailing `/`) match as prefixes to catch nested resources.
+ * File paths use exact match only. Query parameters are stripped before comparison.
+ * All matching is case-insensitive.
+ */
 export function isSensitivePath(path: string): boolean {
   const normalized = stripQuery(path).toLowerCase();
   for (const sensitive of normalizedSet) {

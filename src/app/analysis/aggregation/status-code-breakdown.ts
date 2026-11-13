@@ -42,10 +42,12 @@ const HTTP_STATUS_DESCRIPTIONS: Record<number, string> = {
   500: 'Internal Server Error', 501: 'Not Implemented', 502: 'Bad Gateway', 503: 'Service Unavailable', 504: 'Gateway Timeout',
 };
 
+/** Returns a human-readable description for a known HTTP status code, or a generic fallback. */
 export function httpStatusDescription(code: number): string {
   return HTTP_STATUS_DESCRIPTIONS[code] ?? `Status ${code}`;
 }
 
+/** Groups log records by HTTP status class (2xx–5xx + Other), sorted by count descending. */
 export function aggregateByStatusClass(records: readonly LogRecord[]): StatusClassGroup[] {
   if (records.length === 0) return [];
 

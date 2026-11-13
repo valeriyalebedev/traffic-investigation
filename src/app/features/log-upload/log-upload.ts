@@ -19,6 +19,7 @@ export class LogUpload {
   protected readonly result = this.dataset.result;
   protected readonly loading = this.dataset.loading;
   protected readonly error = this.dataset.error;
+  protected readonly isSampleData = this.dataset.isSampleData;
 
   protected onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -27,5 +28,9 @@ export class LogUpload {
     if (file) {
       this.dataset.loadFile(file);
     }
+  }
+
+  protected loadSample(): void {
+    this.dataset.loadSampleData();
   }
 }

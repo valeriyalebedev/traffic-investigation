@@ -9,7 +9,11 @@
         <div class="file-details">
           <span class="file-name-row">
             <span class="file-name">{{ fileName() }}</span>
-            <span class="badge badge-loaded">Loaded</span>
+            @if (isSampleData()) {
+              <span class="badge badge-sample">Sample data</span>
+            } @else {
+              <span class="badge badge-loaded">Loaded</span>
+            }
           </span>
           <span class="file-meta">Apache Combined Log Format · {{ result()!.stats.totalLines | number }} lines</span>
         </div>

@@ -64,6 +64,11 @@
   color: var(--color-accent);
 }
 
+.badge-sample {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
 .parse-info {
   flex: 1;
   min-width: 180px;

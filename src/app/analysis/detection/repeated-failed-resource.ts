@@ -1,9 +1,16 @@
 import { LogRecord } from '../../core/models/log-record';
 import { Finding, Severity } from './detection-models';
 
+/** Minimum requests to the same normalized path required to consider the group. */
 export const FAILED_RESOURCE_MIN_REQUESTS = 5;
+/** Minimum proportion of HTTP 4xx responses within the group. */
 export const FAILED_RESOURCE_MIN_FAILURE_RATIO = 0.8;
 
+/**
+ * Detects repeated failed requests to the same resource from the same IP.
+ * Only HTTP 4xx responses count as failures; 5xx is excluded.
+ * Can produce multiple findings per IP when different paths each meet the thresholds.
+ */
 export function detectRepeatedFailedResource(records: readonly LogRecord[]): Finding[] {
   const byIpPath = new Map<string, LogRecord[]>();
 
